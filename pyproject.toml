@@ -15,15 +15,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-tf = [
-    "tensorflow>=2.8.0"
-]
+rlds = ["tensorflow>=2.8.0"]
 
-plotting = [
-    "matplotlib"
-]
+plotting = ["matplotlib"]
 
 all = [
-    "sumeru_py[tf]",
+    "sumeru_py[rlds]",
     "sumeru_py[plotting]"
 ]
