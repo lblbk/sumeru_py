@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 import cv2
 
+from sumeru_py.core.log import logger
 from sumeru_py.robot.dataloader import BaseLoader
 
 class BaseVisualizer(ABC):
@@ -34,7 +35,8 @@ class BaseVisualizer(ABC):
         pass
 
 
-class HDF5Visualizer(BaseVisualizer):
+class RobotDataVisualizer(BaseVisualizer):
+    '''support hdf5 rlds'''
     def __init__(self, dataloader: BaseLoader, **kwargs):
         super().__init__(**kwargs)
         self.dataloader = dataloader
@@ -49,7 +51,7 @@ class HDF5Visualizer(BaseVisualizer):
         else:
             wrist_img_resized = wrist_img_rgb
 
-        return np.hstack((main_img_rgb/255, wrist_img_resized/255))
+        return np.hstack((main_img_rgb, wrist_img_resized))
     
     def _plot_info(self, img: np.ndarray, joint_state) -> np.ndarray:
         frame_height, frame_width, _ = img.shape
@@ -68,24 +70,17 @@ class HDF5Visualizer(BaseVisualizer):
         return img
 
     def render(self, win_name:str="win1", save_name:str=None):
-        if save_name is not None:
-            fps = 30
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-            video_writer = cv2.VideoWriter(save_name, fourcc, fps, (frame_width, frame_height))
-            item = self.dataloader.get_item(0)
-            combined_img_rgb = self._concatenate_images(item["static_image"], item['wrist_image'])
-            frame_width, frame_height = combined_img_rgb.shape[1], combined_img_rgb.shape[0]
+        video_writer = None
         cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
 
-        print(f"\n即将开始实时渲染... 在窗口激活时按 'q' 键退出。")
+        logger.info(f"即将开始实时渲染... 在窗口激活时按 'q' 键退出。")
         
         # --- 循环处理每一帧并显示 ---
         for i in range(self.dataloader.get_size()):
             item = self.dataloader.get_item(i)
-
             combined_img_rgb = self._concatenate_images(item["static_image"], item['wrist_image'])
 
-            combined_img_rgb = self._plot_info(combined_img_rgb, item["joint_state"])
+            combined_img_rgb = self._plot_info(combined_img_rgb.astype('uint8'), item["joint_state"])
 
             if self.config.RESIZE_WINDOW is not None:
                 combined_img_rgb = cv2.resize(combined_img_rgb, dsize=(combined_img_rgb.shape[1]*self.config.RESIZE_WINDOW, 
@@ -95,14 +90,24 @@ class HDF5Visualizer(BaseVisualizer):
 
             cv2.imshow(win_name, combined_img_rgb)
 
+            if save_name is not None:
+                if video_writer is None:
+                    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+                    frame_height, frame_width = combined_img_rgb.shape[:2]
+                    video_writer = cv2.VideoWriter(save_name, fourcc, self.config.FPS, (frame_width, frame_height))
+                video_writer.write(combined_img_rgb)
+
             # --- 控制帧率并监听退出键 ---
             delay = int(1000 / self.config.FPS)
             if cv2.waitKey(delay) & 0xFF == ord('q'):
-                print("\n用户提前退出。")
+                logger.info("用户提前退出。")
                 break
         
         cv2.destroyAllWindows()
-        print(f"\n✅ 实时渲染结束。")
+        if save_name is not None:
+            video_writer.release()
+        logger.info(f"✅ 实时渲染结束。")
 
     def save(self, file_name = "win1"):
         return super().save(file_name)
+    
