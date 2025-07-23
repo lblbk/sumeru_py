@@ -46,7 +46,7 @@ class AppLogger:
             self.logger.handlers.clear()
 
         formatter = logging.Formatter(
-            '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
+            '%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] | %(message)s'
         )
 
         project_root = Path(os.getcwd())
