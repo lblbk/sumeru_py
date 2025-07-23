@@ -9,4 +9,21 @@ authors = [{name = "martin", email = "balabala@outlook.com"}]
 description = "Your package description"
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = []
+dependencies = [
+    "numpy",
+    "opencv-python"
+]
+
+[project.optional-dependencies]
+tf = [
+    "tensorflow>=2.8.0"
+]
+
+plotting = [
+    "matplotlib"
+]
+
+all = [
+    "sumeru_py[tf]",
+    "sumeru_py[plotting]"
+]
