@@ -23,7 +23,12 @@ rlds = ["tensorflow>=2.8.0"]
 
 plotting = ["matplotlib"]
 
+tongyi = ["dashscope"]
+
+agent = ["sumeru_py[tongyi]", "pyaudio"]
+
 all = [
     "sumeru_py[rlds]",
     "sumeru_py[plotting]"
+    "sumeru_py[agent]"
 ]
