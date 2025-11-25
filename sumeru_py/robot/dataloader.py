@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import h5py
 
-from sumeru_py.core.log import logger
+from sumeru_py.utils.log import logger
 
 class BaseLoader(ABC):
     @abstractmethod

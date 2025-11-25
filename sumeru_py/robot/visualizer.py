@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 import cv2
 
-from sumeru_py.core.log import logger
+from sumeru_py.utils.log import logger
 from sumeru_py.robot.dataloader import BaseLoader
 
 class BaseVisualizer(ABC):

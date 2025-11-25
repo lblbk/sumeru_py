@@ -19,3 +19,11 @@
 - `robot` 机器人库
 
 ## FAQ
+
+### 本地目录无法引用包，需要这几行代码
+
+```python
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+```

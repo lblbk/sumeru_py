@@ -1,9 +1,8 @@
 import logging
 import os
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
-# 1. 定义一个可供用户继承的默认配置类
 class DefaultLoggerConfig:
     """
     默认日志配置。用户可以继承此类并覆盖属性以进行自定义。
@@ -13,7 +12,8 @@ class DefaultLoggerConfig:
     LOG_LEVEL = logging.DEBUG
     CONSOLE_LEVEL = logging.INFO
     MAX_BYTES = 5 * 1024 * 1024  # 5 MB
-    BACKUP_COUNT = 3
+    BACKUP_INTERVAL = 1
+    BACKUP_COUNT = 15
 
 class AppLogger:
     def __init__(self, config_class=None):
@@ -25,7 +25,6 @@ class AppLogger:
                                             它应包含 DefaultLoggerConfig 中的部分或全部属性。
                                             如果未提供，则使用 DefaultLoggerConfig。
         """
-        # 如果用户没有提供配置类，就使用默认的
         effective_config = config_class or DefaultLoggerConfig
 
         # 使用 getattr 从配置类中获取值，如果属性不存在，则从默认配置类中获取
@@ -37,6 +36,7 @@ class AppLogger:
         log_level = get_config_value("LOG_LEVEL")
         console_level = get_config_value("CONSOLE_LEVEL")
         max_bytes = get_config_value("MAX_BYTES")
+        backup_interval = get_config_value("BACKUP_INTERVAL")
         backup_count = get_config_value("BACKUP_COUNT")
 
         self.logger = logging.getLogger(f"app_logger_{id(effective_config)}")
@@ -46,7 +46,7 @@ class AppLogger:
             self.logger.handlers.clear()
 
         formatter = logging.Formatter(
-            '%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] | %(message)s'
+            '%(asctime)s [%(module)s.%(funcName)s:%(lineno)d] %(levelname)s | %(threadName)s | %(message)s'
         )
 
         project_root = Path(os.getcwd())
@@ -54,9 +54,10 @@ class AppLogger:
         log_path.mkdir(exist_ok=True)
 
         # 文件处理器
-        file_handler = RotatingFileHandler(
+        file_handler = TimedRotatingFileHandler(
             log_path / log_filename,
-            maxBytes=max_bytes,
+            when="midnight",
+            interval=backup_interval,
             backupCount=backup_count,
             encoding='utf-8'
         )
