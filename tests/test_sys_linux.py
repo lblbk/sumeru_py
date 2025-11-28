@@ -1,24 +1,13 @@
-from sumeru_py.system.linux.volume_ctl import PulseAudioAppVolumeController, PulseAudioSystemVolumeController
+from sumeru_py.system.linux.volume_ctl import PulseAudioVolumeController
 
 if __name__ == "__main__":
-    sys_vol = PulseAudioSystemVolumeController()
+    # 控制系统音量
+    sys_vol = PulseAudioVolumeController.for_system()
     if sys_vol.get_volume() != 150:
         sys_vol.set_volume(150)
 
-    app_vol = PulseAudioAppVolumeController("ALSA plug-in [python3.11]")
-
-    # 检查是否活跃
+    # # 控制特定应用音量
+    app_vol = PulseAudioVolumeController.for_app("ALSA plug-in [python3.11]")
     if app_vol.is_active():
-        print("当前音量:", app_vol.get_volume())
-        print("是否静音:", app_vol.is_muted())
-
-        # 设置音量
-        app_vol.set_volume(60)
-        print("当前音量:", app_vol.get_volume())
-
-        # 静音 2 秒后恢复
-        app_vol.mute(True)
-        import time; time.sleep(2)
-        app_vol.mute(False)
-    else:
-        print("应用未播放声音")
+        print("应用音量:", app_vol.get_volume())
+        app_vol.set_volume(40)
