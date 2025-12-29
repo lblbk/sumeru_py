@@ -69,6 +69,15 @@ class EnvManager:
                 return value  # 保留原始字符串
         except Exception as e:
             raise ValueError(f"Failed to cast environment variable '{key}' to {cast}: {e}")
+    
+    @classmethod
+    def get_instance(cls):
+        """
+        获取配置管理器实例.
+        """
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
 
     @staticmethod
     def _cast_bool(value: str) -> bool:
